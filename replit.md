@@ -4,6 +4,12 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Artifacts
+
+- **ai-chat** (`/`): "AayanSamee AI" — Gemini-style chat web app. Clerk Google sign-in, four modes (Coding, Math, General, All-in-One), persistent chat history, SSE streaming responses, markdown + code + KaTeX math rendering, "AayanSamee" watermark bottom-left.
+- **api-server**: Express backend with Clerk session auth, Drizzle/PostgreSQL persistence, Gemini 2.5 Flash streaming via `@google/genai`. Routes under `/api/gemini/conversations`. Mode-specific system prompts.
+- **mockup-sandbox**: design preview server.
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces

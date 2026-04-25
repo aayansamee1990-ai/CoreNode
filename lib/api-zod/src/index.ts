@@ -1,2 +1,18 @@
-export * from "./generated/api";
 export * from "./generated/types";
+export {
+  HealthCheckResponse,
+  ListGeminiConversationsResponse,
+  ListGeminiConversationsResponseItem,
+  CreateGeminiConversationBody as CreateGeminiConversationBodySchema,
+  GetGeminiConversationParams,
+  GetGeminiConversationResponse,
+  UpdateGeminiConversationBody as UpdateGeminiConversationBodySchema,
+  UpdateGeminiConversationParams,
+  UpdateGeminiConversationResponse,
+  DeleteGeminiConversationParams,
+  ListGeminiMessagesParams,
+  ListGeminiMessagesResponse,
+  ListGeminiMessagesResponseItem,
+  SendGeminiMessageBody as SendGeminiMessageBodySchema,
+  SendGeminiMessageParams,
+} from "./generated/api";
