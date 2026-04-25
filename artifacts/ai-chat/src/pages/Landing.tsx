@@ -25,7 +25,7 @@ export default function Landing() {
         </div>
       </div>
       
-      <div className="fixed bottom-6 left-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <div className="px-3 py-1.5 bg-background/60 backdrop-blur-md border border-border/50 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
           AayanSamee
         </div>

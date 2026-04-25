@@ -9,11 +9,10 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Show, useUser, useClerk } from "@clerk/react";
-import { Menu, PanelLeftClose, PanelLeft, Settings, LogOut } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessageList } from "@/components/ChatMessageList";
@@ -234,21 +233,6 @@ export default function Chat() {
                 )}
               </div>
             </div>
-
-            {/* Mode Selector */}
-            <div className="flex items-center">
-              <Select value={mode} onValueChange={handleModeChange}>
-                <SelectTrigger className="w-[130px] h-8 text-xs bg-transparent border-border/50 hover:bg-muted/50 focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Select mode" />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="coding">Coding Helper</SelectItem>
-                  <SelectItem value="math">Math Tutor</SelectItem>
-                  <SelectItem value="all">All-in-One</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </header>
 
           {/* Messages */}
@@ -279,12 +263,13 @@ export default function Chat() {
               onSend={handleSend} 
               disabled={isStreaming || createConversation.isPending}
               mode={mode}
+              onModeChange={handleModeChange}
             />
           </div>
         </div>
 
         {/* Global Watermark */}
-        <div className="fixed bottom-6 left-6 z-[100] pointer-events-none">
+        <div className="fixed bottom-6 right-6 z-[100] pointer-events-none">
           <div className="px-3 py-1.5 bg-background/80 backdrop-blur-md border border-border/50 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
             AayanSamee
           </div>

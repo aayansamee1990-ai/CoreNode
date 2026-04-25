@@ -1,5 +1,5 @@
 import { useState, useRef, KeyboardEvent, useEffect } from "react";
-import { Send, Sparkles, Code, FunctionSquare, LayoutGrid, CornerDownLeft } from "lucide-react";
+import { Send, Sparkles, Code, FunctionSquare, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -7,9 +7,17 @@ interface ChatComposerProps {
   onSend: (content: string) => void;
   disabled?: boolean;
   mode: string;
+  onModeChange?: (mode: string) => void;
 }
 
-export function ChatComposer({ onSend, disabled, mode }: ChatComposerProps) {
+const MODES = [
+  { value: "general", label: "General", Icon: LayoutGrid },
+  { value: "coding", label: "Coding", Icon: Code },
+  { value: "math", label: "Math", Icon: FunctionSquare },
+  { value: "all", label: "All-in-One", Icon: Sparkles },
+] as const;
+
+export function ChatComposer({ onSend, disabled, mode, onModeChange }: ChatComposerProps) {
   const [content, setContent] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -35,26 +43,33 @@ export function ChatComposer({ onSend, disabled, mode }: ChatComposerProps) {
     }
   };
 
-  const getModeIcon = () => {
-    switch (mode) {
-      case "coding": return <Code className="h-3 w-3" />;
-      case "math": return <FunctionSquare className="h-3 w-3" />;
-      case "all": return <Sparkles className="h-3 w-3" />;
-      default: return <LayoutGrid className="h-3 w-3" />;
-    }
-  };
-
-  const getModeLabel = () => {
-    switch (mode) {
-      case "coding": return "Coding";
-      case "math": return "Math";
-      case "all": return "All-in-One";
-      default: return "General";
-    }
-  };
-
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-6 pt-2">
+      {/* Mode pills next to the chat */}
+      <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
+        {MODES.map(({ value, label, Icon }) => {
+          const active = mode === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onModeChange?.(value)}
+              disabled={!onModeChange}
+              className={cn(
+                "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all whitespace-nowrap select-none",
+                active
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "bg-card/40 border-border/50 text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:border-border",
+                !onModeChange && "cursor-default"
+              )}
+            >
+              <Icon className="h-3 w-3" />
+              <span>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="relative rounded-2xl border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-primary/40 overflow-hidden flex flex-col">
         <textarea
           ref={textareaRef}
@@ -66,13 +81,8 @@ export function ChatComposer({ onSend, disabled, mode }: ChatComposerProps) {
           rows={1}
           disabled={disabled}
         />
-        
-        <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full select-none">
-            {getModeIcon()}
-            <span>{getModeLabel()}</span>
-          </div>
-          
+
+        <div className="flex items-center justify-end px-3 pb-2.5 pt-1">
           <Button
             size="icon"
             onClick={() => {

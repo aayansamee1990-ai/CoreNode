@@ -34,20 +34,20 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(243 75% 59%)",
-    colorForeground: "hsl(222 47% 11%)",
-    colorMutedForeground: "hsl(215.4 16.3% 46.9%)",
-    colorDanger: "hsl(0 84.2% 60.2%)",
-    colorBackground: "hsl(0 0% 100%)",
-    colorInput: "hsl(0 0% 100%)",
-    colorInputForeground: "hsl(222 47% 11%)",
-    colorNeutral: "hsl(214.3 31.8% 91.4%)",
+    colorPrimary: "hsl(243 75% 65%)",
+    colorForeground: "hsl(210 40% 98%)",
+    colorMutedForeground: "hsl(215 20.2% 65.1%)",
+    colorDanger: "hsl(0 62.8% 30.6%)",
+    colorBackground: "hsl(222 47% 9%)",
+    colorInput: "hsl(217.2 32.6% 17.5%)",
+    colorInputForeground: "hsl(210 40% 98%)",
+    colorNeutral: "hsl(216 34% 17%)",
     fontFamily: '"Geist", "Inter", sans-serif',
     borderRadius: "0.75rem",
   },
   elements: {
     rootBox: "w-full",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden border border-border shadow-xl",
+    cardBox: "bg-card rounded-2xl w-[440px] max-w-full overflow-hidden border border-border shadow-2xl",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
     headerTitle: "text-2xl font-semibold tracking-tight text-foreground",
@@ -56,22 +56,38 @@ const clerkAppearance = {
     formFieldLabel: "text-sm font-medium text-foreground",
     footerActionLink: "text-primary hover:text-primary/90 font-medium",
     footerActionText: "text-sm text-muted-foreground",
-    dividerText: "text-xs text-muted-foreground uppercase bg-white px-2",
+    dividerText: "text-xs text-muted-foreground uppercase bg-card px-2",
   },
 };
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-gray-50/50 px-4">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 relative overflow-hidden">
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[60%] h-[60%] rounded-full bg-primary/15 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 w-full flex justify-center">
+        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      </div>
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="px-3 py-1.5 bg-background/60 backdrop-blur-md border border-border/50 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
+          AayanSamee
+        </div>
+      </div>
     </div>
   );
 }
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-gray-50/50 px-4">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 relative overflow-hidden">
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[60%] h-[60%] rounded-full bg-primary/15 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 w-full flex justify-center">
+        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      </div>
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="px-3 py-1.5 bg-background/60 backdrop-blur-md border border-border/50 rounded-full text-xs font-medium text-muted-foreground shadow-sm">
+          AayanSamee
+        </div>
+      </div>
     </div>
   );
 }
