@@ -6,8 +6,8 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-- **ai-chat** (`/`): "AayanSamee AI" — Gemini-style chat web app. Clerk Google sign-in, four modes (Coding, Math, General, All-in-One), persistent chat history, SSE streaming responses, markdown + code + KaTeX math rendering, "AayanSamee" watermark bottom-left.
-- **api-server**: Express backend with Clerk session auth, Drizzle/PostgreSQL persistence, Gemini 2.5 Flash streaming via `@google/genai`. Routes under `/api/gemini/conversations`. Mode-specific system prompts.
+- **ai-chat** (`/`): "AayanSamee AI" — Gemini-style chat web app. Clerk Google sign-in, four modes (Coding, Math, General, All-in-One), persistent chat history, SSE streaming responses, markdown + code + KaTeX math rendering, dark mode default, "AayanSamee" watermark bottom-right. File uploads (images, video, audio, PDF, text up to 25 MB) sent as inlineData parts to Gemini, rendered inline in the chat.
+- **api-server**: Express backend with Clerk session auth, Drizzle/PostgreSQL persistence, Gemini 2.5 Flash streaming via `@google/genai`. Routes under `/api/gemini/conversations`. Mode-specific system prompts. Object storage routes under `/api/storage/*` for presigned uploads + serving private objects from GCS via Replit's object storage.
 - **mockup-sandbox**: design preview server.
 
 ## Stack

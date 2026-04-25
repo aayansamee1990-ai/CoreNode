@@ -16,11 +16,19 @@ export interface GeminiConversation {
   createdAt: string;
 }
 
+export interface MessageAttachment {
+  objectPath: string;
+  name: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface GeminiMessage {
   id: number;
   conversationId: number;
   role: string;
   content: string;
+  attachments?: MessageAttachment[];
   createdAt: string;
 }
 
@@ -36,6 +44,26 @@ export interface UpdateGeminiConversationBody {
 
 export interface SendGeminiMessageBody {
   content: string;
+  attachments?: MessageAttachment[];
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export interface GeminiConversationWithMessages {

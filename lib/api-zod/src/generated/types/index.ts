@@ -7,10 +7,14 @@
  */
 
 export * from "./createGeminiConversationBody";
+export * from "./errorEnvelope";
 export * from "./geminiConversation";
 export * from "./geminiConversationWithMessages";
 export * from "./geminiError";
 export * from "./geminiMessage";
 export * from "./healthStatus";
+export * from "./messageAttachment";
 export * from "./sendGeminiMessageBody";
 export * from "./updateGeminiConversationBody";
+export * from "./uploadUrlRequest";
+export * from "./uploadUrlResponse";

@@ -9,7 +9,12 @@ export function useGeminiStream() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const startStream = useCallback(
-    async (conversationId: number, content: string, onDone?: () => void) => {
+    async (
+      conversationId: number,
+      content: string,
+      attachments: Array<{ objectPath: string; name: string; mimeType: string; size: number }>,
+      onDone?: () => void,
+    ) => {
       setIsStreaming(true);
       setStreamedContent("");
       
@@ -25,7 +30,7 @@ export function useGeminiStream() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ content }),
+          body: JSON.stringify({ content, attachments }),
           credentials: "include",
           signal: abortController.signal,
         });

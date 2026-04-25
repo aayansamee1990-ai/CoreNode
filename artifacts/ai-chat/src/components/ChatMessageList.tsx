@@ -1,10 +1,70 @@
-import { useEffect, useRef, useState } from "react";
-import { GeminiMessage } from "@workspace/api-client-react";
+import { useEffect, useRef } from "react";
+import { GeminiMessage, MessageAttachment } from "@workspace/api-client-react";
 import { MarkdownContent } from "./MarkdownContent";
 import { cn } from "@/lib/utils";
-import { Bot, User } from "lucide-react";
+import { Bot, User, FileText, FileVideo, FileAudio, FileType } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const basePathPrefix = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function attachmentSrc(att: MessageAttachment) {
+  return `${basePathPrefix}/api/storage${att.objectPath}`;
+}
+
+function FileIcon({ mimeType }: { mimeType: string }) {
+  if (mimeType.startsWith("video/")) return <FileVideo className="h-5 w-5" />;
+  if (mimeType.startsWith("audio/")) return <FileAudio className="h-5 w-5" />;
+  if (mimeType === "application/pdf") return <FileType className="h-5 w-5" />;
+  return <FileText className="h-5 w-5" />;
+}
+
+function AttachmentList({ attachments, isUser }: { attachments: MessageAttachment[]; isUser: boolean }) {
+  if (!attachments || attachments.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mb-2">
+      {attachments.map((att, i) => {
+        const src = attachmentSrc(att);
+        if (att.mimeType.startsWith("image/")) {
+          return (
+            <a
+              key={i}
+              href={src}
+              target="_blank"
+              rel="noreferrer"
+              className="block overflow-hidden rounded-lg border border-border/40"
+            >
+              <img src={src} alt={att.name} className="max-h-64 max-w-xs object-cover" />
+            </a>
+          );
+        }
+        if (att.mimeType.startsWith("video/")) {
+          return (
+            <video key={i} src={src} controls className="max-h-64 max-w-xs rounded-lg border border-border/40" />
+          );
+        }
+        if (att.mimeType.startsWith("audio/")) {
+          return <audio key={i} src={src} controls className="max-w-xs" />;
+        }
+        return (
+          <a
+            key={i}
+            href={src}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg border max-w-[260px]",
+              isUser ? "bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground" : "bg-muted/40 border-border/60",
+            )}
+          >
+            <FileIcon mimeType={att.mimeType} />
+            <span className="text-xs font-medium truncate">{att.name}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
 
 interface ChatMessageListProps {
   messages: GeminiMessage[];
@@ -30,6 +90,7 @@ export function ChatMessageList({ messages, isStreaming, streamedContent, optimi
       conversationId: -1,
       role: "user",
       content: optimisticMessage,
+      attachments: [],
       createdAt: new Date().toISOString(),
     });
   }
@@ -147,10 +208,13 @@ export function ChatMessageList({ messages, isStreaming, streamedContent, optimi
                     ? "bg-primary text-primary-foreground rounded-tr-sm" 
                     : "bg-card border rounded-tl-sm text-foreground"
                 )}>
-                  {isUser ? (
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                  ) : (
-                    <MarkdownContent content={msg.content} />
+                  <AttachmentList attachments={msg.attachments ?? []} isUser={isUser} />
+                  {msg.content && (
+                    isUser ? (
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    ) : (
+                      <MarkdownContent content={msg.content} />
+                    )
                   )}
                 </div>
               </div>

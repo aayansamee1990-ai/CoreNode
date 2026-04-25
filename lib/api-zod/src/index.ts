@@ -15,4 +15,6 @@ export {
   ListGeminiMessagesResponseItem,
   SendGeminiMessageBody as SendGeminiMessageBodySchema,
   SendGeminiMessageParams,
+  RequestUploadUrlBody,
+  RequestUploadUrlResponse,
 } from "./generated/api";

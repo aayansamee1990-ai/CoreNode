@@ -100,31 +100,34 @@ export default function Chat() {
     }
   };
 
-  const handleSend = async (content: string) => {
+  const handleSend = async (
+    content: string,
+    attachments: Array<{ objectPath: string; name: string; mimeType: string; size: number }> = [],
+  ) => {
     if (isStreaming) return;
+    if (!content && attachments.length === 0) return;
 
     if (!conversationId) {
-      // Create new conversation
-      const title = content.length > 50 ? content.slice(0, 50) + "..." : content;
-      
-      setOptimisticMessage(content);
-      
+      const titleSource = content || attachments[0]?.name || "New chat";
+      const title = titleSource.length > 50 ? titleSource.slice(0, 50) + "..." : titleSource;
+
+      setOptimisticMessage(content || `[${attachments.length} attachment${attachments.length > 1 ? "s" : ""}]`);
+
       createConversation.mutate(
         { data: { title, mode } },
         {
           onSuccess: async (newConv) => {
             setLocation(`/c/${newConv.id}`);
-            await startStream(newConv.id, content, () => setOptimisticMessage(undefined));
+            await startStream(newConv.id, content, attachments, () => setOptimisticMessage(undefined));
           },
           onError: () => {
             setOptimisticMessage(undefined);
-          }
-        }
+          },
+        },
       );
     } else {
-      // Send to existing
-      setOptimisticMessage(content);
-      await startStream(conversationId, content, () => setOptimisticMessage(undefined));
+      setOptimisticMessage(content || `[${attachments.length} attachment${attachments.length > 1 ? "s" : ""}]`);
+      await startStream(conversationId, content, attachments, () => setOptimisticMessage(undefined));
     }
   };
 

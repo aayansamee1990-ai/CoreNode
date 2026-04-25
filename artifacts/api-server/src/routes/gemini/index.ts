@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { db, conversations, messages } from "@workspace/db";
+import { db, conversations, messages, type MessageAttachment } from "@workspace/db";
 import { ai } from "@workspace/integrations-gemini-ai";
 import {
   CreateGeminiConversationBodySchema,
@@ -13,6 +13,20 @@ import {
   SendGeminiMessageBodySchema,
   SendGeminiMessageParams,
 } from "@workspace/api-zod";
+import { ObjectStorageService } from "../../lib/objectStorage";
+
+const objectStorageService = new ObjectStorageService();
+
+async function attachmentToInlinePart(att: MessageAttachment) {
+  const file = await objectStorageService.getObjectEntityFile(att.objectPath);
+  const [buffer] = await file.download();
+  return {
+    inlineData: {
+      mimeType: att.mimeType,
+      data: buffer.toString("base64"),
+    },
+  };
+}
 
 const router: IRouter = Router();
 
@@ -131,6 +145,7 @@ router.get("/conversations/:id", requireAuth, async (req: AuthedRequest, res) =>
         conversationId: m.conversationId,
         role: m.role,
         content: m.content,
+        attachments: m.attachments ?? [],
         createdAt: m.createdAt,
       })),
     });
@@ -231,6 +246,7 @@ router.get("/conversations/:id/messages", requireAuth, async (req: AuthedRequest
         conversationId: m.conversationId,
         role: m.role,
         content: m.content,
+        attachments: m.attachments ?? [],
         createdAt: m.createdAt,
       })),
     );
@@ -249,7 +265,8 @@ router.post("/conversations/:id/messages", requireAuth, async (req: AuthedReques
   }
   const id = params.data.id;
   const userContent = body.data.content.trim();
-  if (!userContent) {
+  const attachments: MessageAttachment[] = (body.data.attachments ?? []) as MessageAttachment[];
+  if (!userContent && attachments.length === 0) {
     res.status(400).json({ error: "Empty message" });
     return;
   }
@@ -269,6 +286,7 @@ router.post("/conversations/:id/messages", requireAuth, async (req: AuthedReques
       conversationId: id,
       role: "user",
       content: userContent,
+      attachments,
     });
 
     const history = await db
@@ -285,14 +303,31 @@ router.post("/conversations/:id/messages", requireAuth, async (req: AuthedReques
 
     const systemPrompt = systemPromptFor(conv.mode);
 
+    const contents = await Promise.all(
+      history.map(async (m) => {
+        const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [];
+        const msgAttachments = (m.attachments ?? []) as MessageAttachment[];
+        for (const att of msgAttachments) {
+          try {
+            parts.push(await attachmentToInlinePart(att));
+          } catch (err) {
+            req.log.warn({ err, att }, "failed to load attachment");
+          }
+        }
+        if (m.content) parts.push({ text: m.content });
+        if (parts.length === 0) parts.push({ text: "" });
+        return {
+          role: m.role === "assistant" ? "model" : "user",
+          parts,
+        };
+      }),
+    );
+
     let fullResponse = "";
     try {
       const stream = await ai.models.generateContentStream({
         model: "gemini-2.5-flash",
-        contents: history.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
+        contents,
         config: {
           maxOutputTokens: 8192,
           systemInstruction: systemPrompt,

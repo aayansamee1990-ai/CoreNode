@@ -5,11 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MessageAttachment } from "./messageAttachment";
 
 export interface GeminiMessage {
   id: number;
   conversationId: number;
   role: string;
   content: string;
+  attachments?: MessageAttachment[];
   createdAt: Date;
 }

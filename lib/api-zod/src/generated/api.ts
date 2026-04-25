@@ -54,6 +54,16 @@ export const GetGeminiConversationResponse = zod.object({
       conversationId: zod.number(),
       role: zod.string(),
       content: zod.string(),
+      attachments: zod
+        .array(
+          zod.object({
+            objectPath: zod.string(),
+            name: zod.string(),
+            mimeType: zod.string(),
+            size: zod.number(),
+          }),
+        )
+        .optional(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -97,6 +107,16 @@ export const ListGeminiMessagesResponseItem = zod.object({
   conversationId: zod.number(),
   role: zod.string(),
   content: zod.string(),
+  attachments: zod
+    .array(
+      zod.object({
+        objectPath: zod.string(),
+        name: zod.string(),
+        mimeType: zod.string(),
+        size: zod.number(),
+      }),
+    )
+    .optional(),
   createdAt: zod.coerce.date(),
 });
 export const ListGeminiMessagesResponse = zod.array(
@@ -112,4 +132,36 @@ export const SendGeminiMessageParams = zod.object({
 
 export const SendGeminiMessageBody = zod.object({
   content: zod.string(),
+  attachments: zod
+    .array(
+      zod.object({
+        objectPath: zod.string(),
+        name: zod.string(),
+        mimeType: zod.string(),
+        size: zod.number(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+export const RequestUploadUrlBody = zod.object({
+  name: zod.string().min(1),
+  size: zod.number().min(1),
+  contentType: zod.string().min(1),
+});
+
+export const RequestUploadUrlResponse = zod.object({
+  uploadURL: zod.string().url(),
+  objectPath: zod.string(),
+  metadata: zod
+    .object({
+      name: zod.string().min(1),
+      size: zod.number().min(1),
+      contentType: zod.string().min(1),
+    })
+    .optional(),
 });

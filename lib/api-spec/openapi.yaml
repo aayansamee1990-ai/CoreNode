@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: gemini
     description: Gemini AI chat operations
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -170,6 +172,36 @@ paths:
           description: SSE stream of assistant response chunks
           content:
             text/event-stream: {}
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
 components:
   schemas:
     HealthStatus:
@@ -207,6 +239,10 @@ components:
           type: string
         content:
           type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageAttachment"
         createdAt:
           type: string
           format: date-time
@@ -238,8 +274,58 @@ components:
       properties:
         content:
           type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageAttachment"
       required:
         - content
+    MessageAttachment:
+      type: object
+      properties:
+        objectPath:
+          type: string
+        name:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+      required:
+        - objectPath
+        - name
+        - mimeType
+        - size
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
     GeminiConversationWithMessages:
       type: object
       properties:
