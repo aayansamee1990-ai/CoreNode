@@ -168,7 +168,7 @@ export default function Chat() {
         <div className="flex-1 flex flex-col min-w-0 bg-background relative z-10">
           
           {/* Header */}
-          <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 z-20 sticky top-0">
+          <header className="h-14 border-b border-border/40 bg-background/40 backdrop-blur-xl flex items-center justify-between px-4 z-20 sticky top-0">
             <div className="flex items-center gap-3 overflow-hidden">
               
               {/* Mobile Menu */}
@@ -220,14 +220,14 @@ export default function Chat() {
                     onChange={(e) => setTitleInput(e.target.value)}
                     onBlur={handleTitleSubmit}
                     onKeyDown={handleTitleKeyDown}
-                    className="h-8 text-sm font-medium px-2 py-1 max-w-[200px] border-primary/30 focus-visible:ring-1 focus-visible:ring-primary/50"
+                    className="h-8 text-sm font-medium px-2 py-1 max-w-[240px] border-primary/30 focus-visible:ring-1 focus-visible:ring-primary/50"
                   />
                 ) : (
-                  <button 
+                  <button
                     onClick={() => conversationId && setIsEditingTitle(true)}
                     className={cn(
-                      "text-sm font-medium truncate px-2 py-1 rounded hover:bg-muted transition-colors max-w-[200px] text-left",
-                      !conversationId && "pointer-events-none"
+                      "text-sm font-medium truncate px-2.5 py-1 rounded-md hover:bg-muted/60 transition-colors max-w-[240px] text-left",
+                      !conversationId && "pointer-events-none text-muted-foreground"
                     )}
                     disabled={!conversationId}
                   >
@@ -235,6 +235,14 @@ export default function Chat() {
                   </button>
                 )}
               </div>
+            </div>
+
+            {/* Right side - user avatar */}
+            <div className="hidden md:flex items-center">
+              <Avatar className="h-7 w-7 border border-border/50">
+                <AvatarImage src={user?.imageUrl} />
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">{user?.firstName?.[0]}</AvatarFallback>
+              </Avatar>
             </div>
           </header>
 

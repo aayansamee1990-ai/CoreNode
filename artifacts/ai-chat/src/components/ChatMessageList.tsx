@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { GeminiMessage, MessageAttachment } from "@workspace/api-client-react";
 import { MarkdownContent } from "./MarkdownContent";
 import { cn } from "@/lib/utils";
-import { Bot, User, FileText, FileVideo, FileAudio, FileType } from "lucide-react";
+import { Bot, User, FileText, FileVideo, FileAudio, FileType, Sparkles } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -96,67 +96,82 @@ export function ChatMessageList({ messages, isStreaming, streamedContent, optimi
   }
 
   const renderEmptyState = () => {
-    let suggestions = [];
-    let title = "What's on your mind?";
-    let subtitle = "I can help you explore ideas, solve problems, or learn something new.";
+    type Suggestion = { text: string; category: string };
+    let suggestions: Suggestion[] = [];
+    let title = "How can I help you today?";
+    let subtitle = "Ask anything, share a file, or pick a starter below.";
+    let accentClass = "from-amber-400/30 via-primary/30 to-fuchsia-400/30";
 
     switch (mode) {
       case "coding":
         title = "Ready to code?";
-        subtitle = "Let's build something together or debug an issue.";
+        subtitle = "Debug, refactor, learn — paste code or screenshots.";
+        accentClass = "from-sky-400/30 via-primary/30 to-cyan-400/30";
         suggestions = [
-          "Explain how React Server Components work",
-          "Write a python script to scrape a website",
-          "Help me debug a CORS error in my API",
-          "Refactor this code to be more readable"
+          { text: "Explain how React Server Components work", category: "Concept" },
+          { text: "Write a Python script to scrape a website", category: "Build" },
+          { text: "Help me debug a CORS error in my API", category: "Debug" },
+          { text: "Refactor this code to be more readable", category: "Refactor" },
         ];
         break;
       case "math":
         title = "Math & Logic";
-        subtitle = "From algebra to advanced calculus.";
+        subtitle = "From algebra to advanced calculus, with clean LaTeX.";
+        accentClass = "from-emerald-400/30 via-primary/30 to-teal-400/30";
         suggestions = [
-          "Explain the Fourier transform intuitively",
-          "Solve this system of linear equations",
-          "What is the difference between a derivative and integral?",
-          "Help me understand matrix multiplication"
+          { text: "Explain the Fourier transform intuitively", category: "Intuition" },
+          { text: "Solve this system of linear equations", category: "Solve" },
+          { text: "Difference between a derivative and integral?", category: "Concept" },
+          { text: "Help me understand matrix multiplication", category: "Learn" },
         ];
         break;
       case "all":
         title = "All-in-One Assistant";
         subtitle = "Your versatile AI companion for any task.";
+        accentClass = "from-fuchsia-400/30 via-primary/30 to-pink-400/30";
         suggestions = [
-          "Draft an email to my manager about a project delay",
-          "Summarize the key themes of 'Dune'",
-          "Create a 7-day workout plan for beginners",
-          "What are some quick, healthy dinner recipes?"
+          { text: "Draft an email to my manager about a delay", category: "Write" },
+          { text: "Summarize the key themes of 'Dune'", category: "Analyze" },
+          { text: "Create a 7-day workout plan for beginners", category: "Plan" },
+          { text: "Some quick, healthy dinner recipes?", category: "Ideas" },
         ];
         break;
       default:
         suggestions = [
-          "Help me plan a weekend trip to Tokyo",
-          "What are the benefits of meditation?",
-          "How do I negotiate a salary offer?",
-          "Explain quantum computing to a 5 year old"
+          { text: "Help me plan a weekend trip to Tokyo", category: "Plan" },
+          { text: "What are the benefits of meditation?", category: "Learn" },
+          { text: "How do I negotiate a salary offer?", category: "Advice" },
+          { text: "Explain quantum computing to a 5 year old", category: "ELI5" },
         ];
         break;
     }
 
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-3xl mx-auto w-full mt-12 md:mt-24">
-        <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          <Bot className="h-8 w-8" />
+      <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-3xl mx-auto w-full">
+        <div className="relative mb-6">
+          <div className={cn("absolute inset-0 rounded-2xl bg-gradient-to-br blur-xl opacity-80", accentClass)} />
+          <div className="relative w-16 h-16 bg-card border border-border/60 rounded-2xl flex items-center justify-center shadow-xl">
+            <Sparkles className="h-7 w-7 text-primary" />
+          </div>
         </div>
-        <h2 className="text-3xl font-semibold mb-3 tracking-tight text-center">{title}</h2>
-        <p className="text-muted-foreground text-center mb-10">{subtitle}</p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-          {suggestions.map((suggestion, i) => (
+        <h2 className="text-3xl md:text-4xl font-semibold mb-3 tracking-tight text-center">
+          <span className="text-gradient">{title}</span>
+        </h2>
+        <p className="text-muted-foreground text-center mb-10 text-[15px] max-w-md">{subtitle}</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl">
+          {suggestions.map((s, i) => (
             <button
               key={i}
-              onClick={() => onSuggestionClick?.(suggestion)}
-              className="text-left px-4 py-3 rounded-xl border bg-card hover:bg-accent hover:border-accent-foreground/20 transition-all text-sm shadow-sm group"
+              onClick={() => onSuggestionClick?.(s.text)}
+              className="text-left p-4 rounded-2xl border border-border/60 bg-card/40 hover:bg-card hover:border-primary/30 transition-all group backdrop-blur-sm"
             >
-              <span className="text-foreground group-hover:text-primary transition-colors">{suggestion}</span>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">
+                {s.category}
+              </div>
+              <div className="text-sm leading-snug text-foreground/90 group-hover:text-foreground transition-colors">
+                {s.text}
+              </div>
             </button>
           ))}
         </div>
@@ -188,25 +203,25 @@ export function ChatMessageList({ messages, isStreaming, streamedContent, optimi
                 isUser ? "flex-row-reverse" : "flex-row"
               )}>
                 {/* Avatar */}
-                <div className={cn("flex-shrink-0", isUser ? "ml-3" : "mr-3")}>
+                <div className={cn("flex-shrink-0", isUser ? "ml-2.5" : "mr-2.5")}>
                   {isUser ? (
-                    <Avatar className="h-8 w-8 border shadow-sm">
+                    <Avatar className="h-7 w-7 border border-border/40 shadow-sm">
                       <AvatarImage src={user?.imageUrl} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs"><User className="h-4 w-4" /></AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs"><User className="h-3.5 w-3.5" /></AvatarFallback>
                     </Avatar>
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-sm">
-                      <Bot className="h-4 w-4" />
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/30 to-fuchsia-500/30 text-primary flex items-center justify-center border border-primary/30 shadow-sm">
+                      <Sparkles className="h-3.5 w-3.5" />
                     </div>
                   )}
                 </div>
 
                 {/* Message Bubble */}
                 <div className={cn(
-                  "px-5 py-3.5 rounded-2xl shadow-sm text-[15px] leading-relaxed",
-                  isUser 
-                    ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                    : "bg-card border rounded-tl-sm text-foreground"
+                  "px-4 py-3 rounded-2xl text-[15px] leading-relaxed",
+                  isUser
+                    ? "bg-primary text-primary-foreground rounded-tr-md shadow-md shadow-primary/20"
+                    : "bg-card/70 border border-border/50 rounded-tl-md text-foreground backdrop-blur-sm"
                 )}>
                   <AttachmentList attachments={msg.attachments ?? []} isUser={isUser} />
                   {msg.content && (
@@ -226,32 +241,32 @@ export function ChatMessageList({ messages, isStreaming, streamedContent, optimi
         {isStreaming && streamedContent && (
           <div className="flex w-full justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex max-w-[85%] md:max-w-[75%] flex-row">
-              <div className="flex-shrink-0 mr-3">
-                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-sm">
-                  <Bot className="h-4 w-4" />
+              <div className="flex-shrink-0 mr-2.5">
+                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/30 to-fuchsia-500/30 text-primary flex items-center justify-center border border-primary/30 shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="px-5 py-3.5 rounded-2xl shadow-sm text-[15px] leading-relaxed bg-card border rounded-tl-sm text-foreground w-full">
+              <div className="px-4 py-3 rounded-2xl text-[15px] leading-relaxed bg-card/70 border border-border/50 rounded-tl-md text-foreground w-full backdrop-blur-sm">
                 <MarkdownContent content={streamedContent} />
-                <span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse align-middle"></span>
+                <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle rounded-sm"></span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Loading Indicator (if streaming hasn't yielded content yet) */}
+        {/* Loading Indicator */}
         {isStreaming && !streamedContent && (
           <div className="flex w-full justify-start animate-in fade-in duration-300">
             <div className="flex max-w-[85%] md:max-w-[75%] flex-row">
-              <div className="flex-shrink-0 mr-3">
-                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-sm">
-                  <Bot className="h-4 w-4" />
+              <div className="flex-shrink-0 mr-2.5">
+                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/30 to-fuchsia-500/30 text-primary flex items-center justify-center border border-primary/30 shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" />
                 </div>
               </div>
-              <div className="px-5 py-4 rounded-2xl shadow-sm bg-card border rounded-tl-sm text-foreground flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }}></div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }}></div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }}></div>
+              <div className="px-4 py-3.5 rounded-2xl bg-card/70 border border-border/50 rounded-tl-md text-foreground flex items-center gap-1 backdrop-blur-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }}></div>
               </div>
             </div>
           </div>

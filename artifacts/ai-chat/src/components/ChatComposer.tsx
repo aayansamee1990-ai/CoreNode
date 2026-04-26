@@ -136,7 +136,7 @@ export function ChatComposer({ onSend, disabled, mode, onModeChange }: ChatCompo
         })}
       </div>
 
-      <div className="relative rounded-2xl border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-primary/40 overflow-hidden flex flex-col">
+      <div className="relative rounded-3xl border border-border/60 bg-card/60 backdrop-blur-md shadow-lg shadow-black/20 transition-all focus-within:border-primary/40 focus-within:shadow-primary/10 overflow-hidden flex flex-col">
         {(attachments.length > 0 || isUploading) && (
           <div className="flex flex-wrap gap-2 px-3 pt-3">
             {attachments.map((att, i) => (
@@ -219,8 +219,10 @@ export function ChatComposer({ onSend, disabled, mode, onModeChange }: ChatCompo
             onClick={submit}
             disabled={!canSend}
             className={cn(
-              "h-8 w-8 rounded-full transition-all duration-200",
-              canSend ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105" : "bg-muted text-muted-foreground opacity-50"
+              "h-9 w-9 rounded-full transition-all duration-200",
+              canSend
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 shadow-md shadow-primary/30"
+                : "bg-muted text-muted-foreground opacity-50"
             )}
           >
             <Send className="h-4 w-4 ml-0.5" />
