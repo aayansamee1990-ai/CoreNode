@@ -1,12 +1,14 @@
 import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetGeminiConversationQueryKey, getListGeminiConversationsQueryKey } from "@workspace/api-client-react";
+import { useAuth } from "@clerk/react";
 
 export function useGeminiStream() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedContent, setStreamedContent] = useState("");
   const queryClient = useQueryClient();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { getToken } = useAuth();
 
   const startStream = useCallback(
     async (
@@ -25,11 +27,15 @@ export function useGeminiStream() {
         const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
         const url = `${basePath}/api/gemini/conversations/${conversationId}/messages`;
 
+        const token = await getToken().catch(() => null);
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
         const response = await fetch(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({ content, attachments }),
           credentials: "include",
           signal: abortController.signal,
@@ -100,7 +106,7 @@ export function useGeminiStream() {
         abortControllerRef.current = null;
       }
     },
-    [queryClient]
+    [queryClient, getToken]
   );
 
   const stopStream = useCallback(() => {
