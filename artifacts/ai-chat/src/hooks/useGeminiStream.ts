@@ -19,9 +19,44 @@ export function useGeminiStream() {
     ) => {
       setIsStreaming(true);
       setStreamedContent("");
-      
+
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
+
+      // Typewriter state: we buffer the full incoming text and release
+      // characters on a fixed cadence so the UI always types at a
+      // human-readable Gemini-like pace, regardless of network bursts.
+      let fullText = "";
+      let revealedLength = 0;
+      let networkDone = false;
+      let typewriterDone = false;
+      let resolveTypewriter: () => void = () => {};
+      const typewriterFinished = new Promise<void>((resolve) => {
+        resolveTypewriter = resolve;
+      });
+
+      // Base pace: ~55 chars/sec (≈18ms per char). When the buffer is
+      // large (model is way ahead), we accelerate gracefully so the UI
+      // doesn't lag too far behind generation.
+      const BASE_INTERVAL_MS = 18;
+      const interval = window.setInterval(() => {
+        if (revealedLength >= fullText.length) {
+          if (networkDone) {
+            window.clearInterval(interval);
+            typewriterDone = true;
+            resolveTypewriter();
+          }
+          return;
+        }
+        const backlog = fullText.length - revealedLength;
+        // Reveal more chars at once if a big backlog has built up
+        let charsToReveal = 1;
+        if (backlog > 400) charsToReveal = 6;
+        else if (backlog > 200) charsToReveal = 4;
+        else if (backlog > 80) charsToReveal = 2;
+        revealedLength = Math.min(fullText.length, revealedLength + charsToReveal);
+        setStreamedContent(fullText.slice(0, revealedLength));
+      }, BASE_INTERVAL_MS);
 
       try {
         const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -52,7 +87,6 @@ export function useGeminiStream() {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let done = false;
-        let accumulatedContent = "";
 
         while (!done) {
           const { value, done: readerDone } = await reader.read();
@@ -69,12 +103,11 @@ export function useGeminiStream() {
 
                 try {
                   const data = JSON.parse(dataStr);
-                  
+
                   if (data.content) {
-                    accumulatedContent += data.content;
-                    setStreamedContent(accumulatedContent);
+                    fullText += data.content;
                   }
-                  
+
                   if (data.done) {
                     done = true;
                   }
@@ -86,6 +119,10 @@ export function useGeminiStream() {
           }
         }
 
+        // Network finished — let the typewriter drain to the end
+        networkDone = true;
+        await typewriterFinished;
+
         // On complete
         queryClient.invalidateQueries({
           queryKey: getGetGeminiConversationQueryKey(conversationId),
@@ -93,14 +130,17 @@ export function useGeminiStream() {
         queryClient.invalidateQueries({
           queryKey: getListGeminiConversationsQueryKey(),
         });
-        
-        if (onDone) onDone();
 
+        if (onDone) onDone();
       } catch (error: any) {
         if (error.name !== "AbortError") {
           console.error("Stream error:", error);
         }
       } finally {
+        if (!typewriterDone) {
+          window.clearInterval(interval);
+          resolveTypewriter();
+        }
         setIsStreaming(false);
         setStreamedContent("");
         abortControllerRef.current = null;
